@@ -1,0 +1,19 @@
+# Python
+
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+build/
+.cache/
+htmlcov/
+.mypy_cache/
+Desktop.ini
+.DS_Store
+.eggs/
+*.log
+env/
+*.egg-info/
+develop-eggs/
+.tox/
