@@ -22,6 +22,21 @@ class DiffResult:
             or self.removed_columns
         )
 
+    def summary(self) -> str:
+        """Return a human-readable summary of the diff."""
+        parts = []
+        if self.added_rows:
+            parts.append(f"{len(self.added_rows)} row(s) added")
+        if self.removed_rows:
+            parts.append(f"{len(self.removed_rows)} row(s) removed")
+        if self.modified_rows:
+            parts.append(f"{len(self.modified_rows)} row(s) modified")
+        if self.added_columns:
+            parts.append(f"{len(self.added_columns)} column(s) added")
+        if self.removed_columns:
+            parts.append(f"{len(self.removed_columns)} column(s) removed")
+        return ", ".join(parts) if parts else "No differences"
+
 
 def diff_csv(
     left: list[dict[str, str]],
@@ -44,8 +59,13 @@ def diff_csv(
     result.removed_columns = sorted(left_cols - right_cols)
 
     if key:
-        left_map = {row[key]: row for row in left if key in row}
-        right_map = {row[key]: row for row in right if key in row}
+        if left and key not in left[0]:
+            raise KeyError(f"Key column '{key}' not found in left CSV")
+        if right and key not in right[0]:
+            raise KeyError(f"Key column '{key}' not found in right CSV")
+
+        left_map = {row[key]: row for row in left}
+        right_map = {row[key]: row for row in right}
 
         for k, row in right_map.items():
             if k not in left_map:
