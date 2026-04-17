@@ -21,6 +21,13 @@ def semicolon_csv(tmp_path: Path) -> Path:
     return f
 
 
+@pytest.fixture
+def tab_csv(tmp_path: Path) -> Path:
+    f = tmp_path / "tab.csv"
+    f.write_text("name\tage\tcity\nAlice\t30\tNYC\n", encoding="utf-8")
+    return f
+
+
 def test_load_csv_headers(simple_csv):
     headers, _ = load_csv(str(simple_csv))
     assert headers == ["name", "age", "city"]
@@ -55,6 +62,10 @@ def test_detect_delimiter_comma(simple_csv):
 
 def test_detect_delimiter_semicolon(semicolon_csv):
     assert detect_delimiter(str(semicolon_csv)) == ";"
+
+
+def test_detect_delimiter_tab(tab_csv):
+    assert detect_delimiter(str(tab_csv)) == "\t"
 
 
 def test_detect_delimiter_fallback_on_missing():
