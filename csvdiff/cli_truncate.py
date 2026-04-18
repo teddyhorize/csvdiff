@@ -31,15 +31,31 @@ def register_truncate_args(parser: argparse.ArgumentParser) -> None:
 
 
 def build_truncate_options(args: argparse.Namespace) -> TruncateOptions:
-    """Build TruncateOptions from parsed CLI args."""
-    opts = TruncateOptions(
-        max_rows=getattr(args, "max_rows", 0),
-        max_cols=getattr(args, "max_cols", 0),
-        max_cell_len=getattr(args, "max_cell_len", 0),
+    """Build TruncateOptions from parsed CLI args.
+
+    Raises:
+        TruncateError: If any truncation limit is negative.
+    """
+    max_rows = getattr(args, "max_rows", 0)
+    max_cols = getattr(args, "max_cols", 0)
+    max_cell_len = getattr(args, "max_cell_len", 0)
+
+    invalid = [
+        ("--max-rows", max_rows),
+        ("--max-cols", max_cols),
+        ("--max-cell-len", max_cell_len),
+    ]
+    for flag, value in invalid:
+        if value < 0:
+            raise TruncateError(
+                f"{flag} must be a non-negative integer, got {value}."
+            )
+
+    return TruncateOptions(
+        max_rows=max_rows,
+        max_cols=max_cols,
+        max_cell_len=max_cell_len,
     )
-    if opts.max_rows < 0 or opts.max_cols < 0 or opts.max_cell_len < 0:
-        raise TruncateError("Truncation limits must be non-negative integers.")
-    return opts
 
 
 def truncate_options_from_args(args: argparse.Namespace) -> TruncateOptions:
