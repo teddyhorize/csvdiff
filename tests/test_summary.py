@@ -69,3 +69,18 @@ def test_as_dict(full_result):
     assert d["added_rows"] == 1
     assert d["total_changes"] == 5
     assert isinstance(d["added_columns"], list)
+
+
+def test_as_dict_columns_are_sorted(full_result):
+    """Columns in as_dict output should be sorted for deterministic output."""
+    result = DiffResult(
+        added_rows=[],
+        removed_rows=[],
+        modified_rows=[],
+        added_columns={"zebra", "apple", "mango"},
+        removed_columns={"omega", "alpha"},
+    )
+    summary = summarize(result)
+    d = summary.as_dict()
+    assert d["added_columns"] == sorted(d["added_columns"])
+    assert d["removed_columns"] == sorted(d["removed_columns"])
