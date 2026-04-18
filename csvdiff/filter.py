@@ -29,6 +29,9 @@ def filter_columns(rows: List[Dict[str, Any]], options: FilterOptions) -> List[D
             raise FilterError(f"Unknown columns: {', '.join(sorted(unknown))}")
         keep = options.columns
     else:
+        unknown_excluded = set(options.exclude_columns) - available
+        if unknown_excluded:
+            raise FilterError(f"Unknown excluded columns: {', '.join(sorted(unknown_excluded))}")
         keep = [c for c in rows[0].keys() if c not in options.exclude_columns]
 
     return [{k: row[k] for k in keep if k in row} for row in rows]
