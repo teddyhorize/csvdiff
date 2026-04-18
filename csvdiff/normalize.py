@@ -27,6 +27,12 @@ def _normalize_value(value: str, opts: NormalizeOptions) -> str:
 def normalize_row(row: Dict[str, str], opts: NormalizeOptions) -> Dict[str, str]:
     """Return a new row dict with normalized values."""
     target = set(opts.columns) if opts.columns else None
+    if target is not None:
+        unknown = target - row.keys()
+        if unknown:
+            raise NormalizeError(
+                f"normalize_columns references unknown column(s): {', '.join(sorted(unknown))}"
+            )
     return {
         k: (_normalize_value(v, opts) if (target is None or k in target) else v)
         for k, v in row.items()
