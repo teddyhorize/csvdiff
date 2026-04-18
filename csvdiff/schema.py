@@ -52,3 +52,9 @@ def format_schema_diff(diff: SchemaDiff) -> str:
     if diff.reordered:
         lines.append("  Column order changed.")
     return "Schema differences:\n" + "\n".join(lines)
+
+
+def common_columns(diff: SchemaDiff) -> List[str]:
+    """Return columns present in both left and right schemas, in left order."""
+    right_set = set(diff.right_columns)
+    return [c for c in diff.left_columns if c in right_set]
