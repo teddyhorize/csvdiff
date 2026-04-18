@@ -55,3 +55,13 @@ def render_report(report: Report, verbose: bool = False) -> str:
     if verbose:
         parts.append(report.summary_text)
     return "\n".join(filter(None, parts))
+
+
+def report_exit_code(report: Report) -> int:
+    """Return an appropriate process exit code based on the report.
+
+    Returns:
+        0 if there are no differences (clean),
+        1 if differences were found.
+    """
+    return 0 if report.is_clean else 1
