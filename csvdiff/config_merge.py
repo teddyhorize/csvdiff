@@ -1,45 +1,34 @@
-"""Merge CLI arguments into a CsvDiffConfig, with config-file as base."""
-from __future__ import annotations
+"""Merge CLI arguments and config file values into a unified CsvDiffConfig."""
 
-import argparse
-from typing import Optional
-
-from csvdiff.config import CsvDiffConfig, default_config, load_config
+from typing import Any, Dict
+from csvdiff.config import CsvDiffConfig, default_config, validate
 
 
-def merge_config(
-    args: argparse.Namespace,
-    config_path: Optional[str] = None,
-) -> CsvDiffConfig:
-    """Return a CsvDiffConfig built from an optional file then CLI overrides.
+def merge_config(base: CsvDiffConfig, overrides: Dict[str, Any]) -> CsvDiffConfig:
+    """Apply a dict of overrides onto a base config, returning a new instance.
 
-    Priority: CLI flags > config file > built-in defaults.
+    Only keys present in the overrides dict with non-None values are applied.
+    The resulting config is validated before being returned.
     """
-    cfg: CsvDiffConfig = load_config(config_path) if config_path else default_config()
+    merged = CsvDiffConfig(
+        delimiter=overrides.get("delimiter") or base.delimiter,
+        key_column=overrides.get("key_column") or base.key_column,
+        output_format=overrides.get("output_format") or base.output_format,
+        include_columns=overrides.get("include_columns") or base.include_columns,
+        exclude_columns=overrides.get("exclude_columns") or base.exclude_columns,
+        row_limit=overrides.get("row_limit") if overrides.get("row_limit") is not None else base.row_limit,
+        color=overrides.get("color") if overrides.get("color") is not None else base.color,
+        use_cache=overrides.get("use_cache") if overrides.get("use_cache") is not None else base.use_cache,
+    )
+    validate(merged)
+    return merged
 
-    if getattr(args, "delimiter", None):
-        cfg.delimiter = args.delimiter
 
-    if getattr(args, "key", None):
-        cfg.key_columns = args.key if isinstance(args.key, list) else [args.key]
-
-    if getattr(args, "ignore", None):
-        cfg.ignore_columns = args.ignore if isinstance(args.ignore, list) else [args.ignore]
-
-    if getattr(args, "include", None):
-        cfg.include_columns = args.include if isinstance(args.include, list) else [args.include]
-
-    if getattr(args, "limit", None) is not None:
-        cfg.row_limit = args.limit
-
-    if getattr(args, "format", None):
-        cfg.output_format = args.format
-
-    if getattr(args, "no_color", False):
-        cfg.color = False
-
-    if getattr(args, "no_schema", False):
-        cfg.show_schema = False
-
-    cfg.validate()
-    return cfg
+def merge_from_cli(config: CsvDiffConfig, args: Any) -> CsvDiffConfig:
+    """Build overrides dict from an argparse Namespace and merge with config."""
+    overrides: Dict[str, Any] = {}
+    for field in CsvDiffConfig.__dataclass_fields__:  # type: ignore[attr-defined]
+        val = getattr(args, field, None)
+        if val is not None:
+            overrides[field] = val
+    return merge_config(config, overrides)
