@@ -30,6 +30,12 @@ def test_apply_column_ignores_multiple():
     assert all(set(row.keys()) == {"id"} for row in result)
 
 
+def test_apply_column_ignores_nonexistent_column():
+    """Ignoring a column that doesn't exist should return rows unchanged."""
+    result = apply_column_ignores(SAMPLE, ["nonexistent"])
+    assert result == SAMPLE
+
+
 def test_apply_row_ignores_filters_match():
     result = apply_row_ignores(SAMPLE, "IGNORE_ME")
     assert len(result) == 2
@@ -50,6 +56,18 @@ def test_apply_row_ignores_regex():
     result = apply_row_ignores(SAMPLE, r"^1,")
     assert len(result) == 2
     assert result[0]["id"] == "2"
+
+
+def test_apply_row_ignores_pattern_matches_none():
+    """A pattern that matches no rows should return all rows unchanged."""
+    result = apply_row_ignores(SAMPLE, "NO_MATCH_PATTERN")
+    assert result == SAMPLE
+
+
+def test_apply_row_ignores_pattern_matches_all():
+    """A pattern that matches all rows should return an empty list."""
+    result = apply_row_ignores(SAMPLE, r".*")
+    assert result == []
 
 
 def test_apply_ignores_combined():
