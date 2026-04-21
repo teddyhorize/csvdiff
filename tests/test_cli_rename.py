@@ -39,8 +39,21 @@ def test_rename_options_from_args_with_pairs(parser):
     assert opts.mapping == {"old": "new"}
 
 
+def test_rename_options_from_args_multiple_pairs(parser):
+    args = parser.parse_args(["--rename", "a:b", "--rename", "c:d"])
+    opts = rename_options_from_args(args)
+    assert opts.mapping == {"a": "b", "c": "d"}
+
+
 def test_rename_options_from_args_invalid_raises(parser):
     args = parser.parse_args(["--rename", "badpair"])
+    with pytest.raises(SystemExit, match="rename error"):
+        rename_options_from_args(args)
+
+
+def test_rename_options_from_args_empty_key_raises(parser):
+    """A pair like ':new' has an empty key and should be rejected."""
+    args = parser.parse_args(["--rename", ":new"])
     with pytest.raises(SystemExit, match="rename error"):
         rename_options_from_args(args)
 
