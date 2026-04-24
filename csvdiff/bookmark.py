@@ -50,7 +50,12 @@ def load_bookmark(name: str, path: str = DEFAULT_BOOKMARK_FILE) -> Bookmark:
     if name not in store:
         raise BookmarkError(f"Bookmark '{name}' not found.")
     data = store[name]
-    return Bookmark(**data)
+    try:
+        return Bookmark(**data)
+    except TypeError as e:
+        raise BookmarkError(
+            f"Bookmark '{name}' has an unexpected format: {e}"
+        ) from e
 
 
 def list_bookmarks(path: str = DEFAULT_BOOKMARK_FILE) -> list[Bookmark]:
