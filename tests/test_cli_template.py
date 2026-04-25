@@ -51,6 +51,15 @@ def test_template_options_custom_sep(parser):
     assert opts.separator == "|"
 
 
+def test_template_options_default_sep(parser):
+    """Verify that the default separator is used when --template-sep is not provided."""
+    args = parser.parse_args(["--template", "{label}:{id}"])
+    opts = template_options_from_args(args)
+    assert opts is not None
+    # The default separator should be a newline
+    assert opts.separator == "\n"
+
+
 def test_maybe_render_template_returns_false_when_no_template(parser, diff_result):
     args = parser.parse_args([])
     assert maybe_render_template(diff_result, args) is False
@@ -62,3 +71,18 @@ def test_maybe_render_template_returns_true_when_set(parser, diff_result, capsys
     assert result is True
     captured = capsys.readouterr()
     assert "ADDED:1" in captured.out
+
+
+def test_maybe_render_template_custom_sep(parser, capsys):
+    """Verify that a custom separator is used between rendered rows."""
+    diff = DiffResult(
+        added=[{"id": "1", "val": "x"}, {"id": "2", "val": "y"}],
+        removed=[],
+        modified=[],
+        added_columns=[],
+        removed_columns=[],
+    )
+    args = parser.parse_args(["--template", "{label}:{id}", "--template-sep", "|"])
+    maybe_render_template(diff, args)
+    captured = capsys.readouterr()
+    assert "ADDED:1|ADDED:2" in captured.out
