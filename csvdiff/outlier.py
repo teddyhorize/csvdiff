@@ -35,7 +35,22 @@ def detect_outliers(
     column: str,
     z_threshold: float = 2.5,
 ) -> OutlierResult:
-    """Detect outliers in *column* using Z-score method."""
+    """Detect outliers in *column* using Z-score method.
+
+    Args:
+        rows: List of row dicts, typically from a CSV diff result.
+        column: The column name to analyse.
+        z_threshold: Number of standard deviations from the mean above
+            which a value is considered an outlier.  Defaults to 2.5.
+
+    Returns:
+        An :class:`OutlierResult` describing the distribution and any
+        rows whose value exceeds *z_threshold* standard deviations.
+
+    Raises:
+        OutlierError: If *rows* is empty, *column* is missing, or fewer
+            than two numeric values are present in the column.
+    """
     if not rows:
         raise OutlierError("No rows provided for outlier detection.")
     if column not in rows[0]:
@@ -70,6 +85,13 @@ def detect_outliers(
 
 
 def format_outlier(result: OutlierResult, *, color: bool = False) -> str:
+    """Return a human-readable summary of *result*.
+
+    Args:
+        result: The :class:`OutlierResult` to format.
+        color: When ``True``, wrap each outlier row in ANSI yellow escape
+            codes for terminal display.
+    """
     lines = [
         f"Outliers in '{result.column}': {result.count} found",
         f"  mean={result.mean:.4f}  stdev={result.stdev:.4f}  "
